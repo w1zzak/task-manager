@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  name        String
+  memberships Membership[]
+}
+
+model Team {
+  id         String       @id @default(uuid())
+  name       String
+  inviteCode String       @unique
+  createdAt  DateTime     @default(now())
+  members    Membership[]
+  tasks      Task[]
+}
+
+model Membership {
+  userId String
+  teamId String
+  role   String // "creator" | "member"
+  user   User   @relation(fields: [userId], references: [id])
+  team   Team   @relation(fields: [teamId], references: [id])
+
+  @@id([userId, teamId])
+}
+
+model Task {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  status       String   @default("Todo") // "Todo" | "In Progress" | "Done"
+  teamId       String
+  assignedToId String?
+  createdAt    DateTime @default(now())
+  team         Team     @relation(fields: [teamId], references: [id])
+}
